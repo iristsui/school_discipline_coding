@@ -1,0 +1,179 @@
+//PBIS multivariable analysis coding file
+//By Casey Tsui
+//Format: Stata
+//Last updated: 4/6/11
+
+
+//Storing estimates for range plot graphing in R////////////////////////////////
+//FULL DATA
+log using "Z:\home\casey\documents\HIP\logs\stata_gee_log.txt", text replace
+cd Z:\home\casey\documents\HIP\data\stata_gee_estimates
+*insheet using "Z:\home\casey\documents\HIP\data\lm_data_outlier_dropped.csv", comma clear
+insheet using "Z:\home\casey\documents\HIP\data\lm_data.csv", comma clear
+
+destring , ignore("NA") replace
+
+local xvars "ebsimplementationaverage setimplementationaverage ebscriterion8080 setcriterion8080"
+local yvars "iss oss major odr recid numstud gradrate attendrate propunexcused aframmajoroverwhite asianmajoroverwhite latinomajoroverwhite"
+local covars "highschool maleprop aframprop asianprop latinoprop frpmprop fte100student nces_member i.urbanicity"
+
+foreach xvar of local xvars {
+  if "`xvar'" == "ebsimplementationaverage" local x = 1
+  if "`xvar'" == "setimplementationaverage" local x = 2
+  if "`xvar'" == "ebscriterion8080" local x = 3
+  if "`xvar'" == "setcriterion8080" local x = 4
+  foreach yvar of local yvars {
+    if "`yvar'" == "iss" local y = 1
+    if "`yvar'" == "oss" local y = 2 
+    if "`yvar'" == "major" local y = 3 
+    if "`yvar'" == "odr" local y = 4 
+    if "`yvar'" == "recid" local y = 5
+    if "`yvar'" == "numstud" local y = 6 
+    if "`yvar'" == "gradrate" local y = 7
+    if "`yvar'" == "attendrate" local y = 8
+    if "`yvar'" == "propunexcused" local y= 9
+    if "`yvar'" == "aframmajoroverwhite" local y = 10
+    if "`yvar'" == "asianmajoroverwhite" local y = 11
+    if "`yvar'" == "latinomajoroverwhite" local y = 12
+
+    local cor "ar1"
+    if `y' <= 4 | `y' == 6 local fam "nb"
+    if `y' == 5 | (`y' >= 7 & `y' <= 9) local fam "binomial"
+    if `y' >= 10 local fam "gaussian"
+
+    local options1 "i(school_educationalorgid) t(year) family(`fam') corr(`cor') eform robust iterate(200)"
+    local options2 "i(school_educationalorgid) t(year) family(`fam') corr(`cor') robust iterate(200)"
+
+    if `y' <= 9 capture noisily xi:xtgee `yvar' year `xvar' `covars', `options1'
+    if `y' >= 10 capture noisily xi:xtgee `yvar' year `xvar' `covars', `options2'
+    
+    parmest , saving(model_`x'_`y'.dta, replace)
+  }
+}
+
+forvalues x=1/4 {
+  forvalues y=1/12 {
+    capture use "Z:\home\casey\documents\HIP\data\stata_gee_estimates\model_`x'_`y'.dta", clear
+    capture outsheet using "Z:\home\casey\documents\HIP\data\stata_gee_estimates\model_`x'_`y'.csv", comma replace
+    capture erase "Z:\home\casey\documents\HIP\data\stata_gee_estimates\model_`x'_`y'.dta"
+  }
+}
+log close
+
+
+
+
+//Storing estimates for range plot graphing in R////////////////////////////////
+//DATA WITH OUTLIER SCHOOL
+log using "Z:\home\casey\documents\HIP\logs\stata_gee_log_original.txt", text replace
+cd Z:\home\casey\documents\HIP\data\stata_gee_estimates\original
+insheet using "Z:\home\casey\documents\HIP\data\lm_data.original.csv", comma clear
+
+destring , ignore("NA") replace
+
+local xvars "ebsimplementationaverage setimplementationaverage ebscriterion8080 setcriterion8080"
+local yvars "iss oss major odr recid numstud gradrate attendrate propunexcused aframmajoroverwhite asianmajoroverwhite latinomajoroverwhite"
+local covars "highschool maleprop aframprop asianprop latinoprop frpmprop fte100student nces_member i.urbanicity"
+
+foreach xvar of local xvars {
+  if "`xvar'" == "ebsimplementationaverage" local x = 1
+  if "`xvar'" == "setimplementationaverage" local x = 2
+  if "`xvar'" == "ebscriterion8080" local x = 3
+  if "`xvar'" == "setcriterion8080" local x = 4
+  foreach yvar of local yvars {
+    if "`yvar'" == "iss" local y = 1
+    if "`yvar'" == "oss" local y = 2 
+    if "`yvar'" == "major" local y = 3 
+    if "`yvar'" == "odr" local y = 4 
+    if "`yvar'" == "recid" local y = 5
+    if "`yvar'" == "numstud" local y = 6 
+    if "`yvar'" == "gradrate" local y = 7
+    if "`yvar'" == "attendrate" local y = 8
+    if "`yvar'" == "propunexcused" local y= 9
+    if "`yvar'" == "aframmajoroverwhite" local y = 10
+    if "`yvar'" == "asianmajoroverwhite" local y = 11
+    if "`yvar'" == "latinomajoroverwhite" local y = 12
+
+    local cor "ar1"
+    if `y' <= 4 | `y' == 6 local fam "nb"
+    if `y' == 5 | (`y' >= 7 & `y' <= 9) local fam "binomial"
+    if `y' >= 10 local fam "gaussian"
+
+    local options1 "i(school_educationalorgid) t(year) family(`fam') corr(`cor') eform robust iterate(200)"
+    local options2 "i(school_educationalorgid) t(year) family(`fam') corr(`cor') robust iterate(200)"
+
+    if `y' <= 9 capture noisily xi:xtgee `yvar' year `xvar' `covars', `options1'
+    if `y' >= 10 capture noisily xi:xtgee `yvar' year `xvar' `covars', `options2'
+    
+    parmest , saving(model_`x'_`y'.dta, replace)
+  }
+}
+
+forvalues x=1/4 {
+  forvalues y=1/12 {
+    capture use "Z:\home\casey\documents\HIP\data\stata_gee_estimates\original\model_`x'_`y'.dta", clear
+    capture outsheet using "Z:\home\casey\documents\HIP\data\stata_gee_estimates\original\model_`x'_`y'.csv", comma replace
+    capture erase "Z:\home\casey\documents\HIP\data\stata_gee_estimates\original\model_`x'_`y'.dta"
+  }
+}
+log close
+
+
+
+
+
+//Storing estimates for range plot graphing in R////////////////////////////////
+//MS only DATA
+log using "Z:\home\casey\documents\HIP\logs\stata_gee_log_hs_dropped.txt", text replace
+cd Z:\home\casey\documents\HIP\data\stata_gee_estimates\hs_dropped
+insheet using "Z:\home\casey\documents\HIP\data\lm_data_hs_dropped.csv", comma clear
+
+destring , ignore("NA") replace
+
+local xvars "ebsimplementationaverage setimplementationaverage ebscriterion8080 setcriterion8080"
+local yvars "iss oss major odr recid numstud gradrate attendrate propunexcused aframmajoroverwhite asianmajoroverwhite latinomajoroverwhite"
+local covars "highschool maleprop aframprop asianprop latinoprop frpmprop fte100student nces_member i.urbanicity"
+
+foreach xvar of local xvars {
+  if "`xvar'" == "ebsimplementationaverage" local x = 1
+  if "`xvar'" == "setimplementationaverage" local x = 2
+  if "`xvar'" == "ebscriterion8080" local x = 3
+  if "`xvar'" == "setcriterion8080" local x = 4
+  foreach yvar of local yvars {
+    if "`yvar'" == "iss" local y = 1
+    if "`yvar'" == "oss" local y = 2 
+    if "`yvar'" == "major" local y = 3 
+    if "`yvar'" == "odr" local y = 4 
+    if "`yvar'" == "recid" local y = 5
+    if "`yvar'" == "numstud" local y = 6 
+    if "`yvar'" == "gradrate" local y = 7
+    if "`yvar'" == "attendrate" local y = 8
+    if "`yvar'" == "propunexcused" local y= 9
+    if "`yvar'" == "aframmajoroverwhite" local y = 10
+    if "`yvar'" == "asianmajoroverwhite" local y = 11
+    if "`yvar'" == "latinomajoroverwhite" local y = 12
+
+    local cor "ar1"
+    if `y' <= 4 | `y' == 6 local fam "nb"
+    if `y' == 5 | (`y' >= 7 & `y' <= 9) local fam "binomial"
+    if `y' >= 10 local fam "gaussian"
+
+    local options1 "i(school_educationalorgid) t(year) family(`fam') corr(`cor') eform robust iterate(200)"
+    local options2 "i(school_educationalorgid) t(year) family(`fam') corr(`cor') robust iterate(200)"
+
+    if `y' <= 9 capture noisily xi:xtgee `yvar' year `xvar' `covars', `options1'
+    if `y' >= 10 capture noisily xi:xtgee `yvar' year `xvar' `covars', `options2'
+    
+    parmest , saving(model_`x'_`y'.dta, replace)
+  }
+}
+
+forvalues x=1/4 {
+  forvalues y=1/12 {
+    capture use "Z:\home\casey\documents\HIP\data\stata_gee_estimates\hs_dropped\model_`x'_`y'.dta", clear
+    capture outsheet using "Z:\home\casey\documents\HIP\data\stata_gee_estimates\hs_dropped\model_`x'_`y'.csv", comma replace
+    capture erase "Z:\home\casey\documents\HIP\data\stata_gee_estimates\hs_dropped\model_`x'_`y'.dta"
+  }
+}
+log close
+

@@ -1,0 +1,23 @@
+sink(file="//Users//HumanImpactPartners//Documents//hias//school_discipline_hia//results//pbis_output.txt") #send output to file
+
+# PBIS Function File
+# By Casey Tsui
+# Format: R
+# Last updated: 9/15/10
+
+# Author Comment: This file contains the functions that are called in
+# ~/pbis_do.txt
+# Contains all of the functions needed to perform the actual analysis. source()'ing this file should have no side effects other than loading up the function definitions. This means that you can modify this file and reload it without having to go back an repeat steps 1 & 2 which can take a long time to run for large data sets.#
+# NOTE: THIS FILE IS NOW OBSOLETE DUE TO THE RECEIPT OF NEW DATA FILES FROM UO
+#       ON 9/16/10. PLEASE SEE THE NEW FILE IN:
+#       "~//Documents//hias//school_discipline_hia//data//pbis_data//Gottlieb Revised Data Files 9-16-2010"
+
+DemoMeans <- function(x) {
+  # Computes the means over 4 years and outputs a table
+  # Args:
+  #   x: data frame variable name that is to be aggregated over sch. id
+  rx <- cbind(tapply(x, a$school_educationalorgid, mean, na.rm=TRUE))
+  return(rx)
+}
+
+sink()

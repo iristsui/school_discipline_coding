@@ -1,0 +1,145 @@
+# PBIS Preliminary School Selection File
+# By Casey Tsui
+# Format: R
+# Last updated 9/3/10
+
+library(Hmisc)
+
+# READ IN CSV FILE ############################################################################################################################
+master <- read.csv(file="//Users//HumanImpactPartners//Documents//hias//school_discipline_hia//data//Gottlieb_PanelStudy_Masterfile.csv", header=TRUE, sep=",")
+
+# Convert all variables to lowercase
+master <- upData(master, lowernames=TRUE)
+
+# Keep only traditional, non-alternative schools
+master <- master[master$filter_school_isaltjj==0,]
+
+# Rename variables
+names(master)[names(master)=="swisandset20001"] <- "swisandset200001"
+
+col.table <- function(var1, var2, weights=rep(1,length(var1)), margins=TRUE){
+# Creating table of (weighted) relative frequencies by column, and adding row variable margins as the last column
+crosstab <- prop.table(xtabs(weights ~ var1 + var2), margin=2)
+t <- cbind(crosstab, Total=prop.table(xtabs(weights ~ var1)))
+# Adding column sums in the last row
+t <- rbind(t,Total = colSums(t))
+# Naming rows and columns of the table after var1 and var2 used, and returning result
+names(dimnames(t)) <- c(deparse(substitute(var1)), deparse(substitute(var2)))
+return(round(100*t,2))
+}
+
+row.table <- function(var1, var2, weights=rep(1,length(var1)), margins=TRUE){
+t <- rbind(prop.table(xtabs(weights ~ var1 + var2), margin=1),
+Total=prop.table(xtabs(weights ~ var2)))
+t <- cbind(t,Total = rowSums(t))
+names(dimnames(t)) <- c(deparse(substitute(var1)), deparse(substitute(var2)))
+return(round(100*t,2))
+}
+
+# Create swisandset200405 variable that was left out of initial dataset
+master$swisandset200405 <- master$swis200405 + master$set200405
+
+# CREATE 4-YEAR ############################################################################################################################
+#-SWIS and SET
+master$swisset0003 <- ifelse(master$swisandset200001==2 & master$swisandset200102==2 & master$swisandset200203==2 & master$swisandset200304==2, 1, 0)
+master$swisset0104 <- ifelse(master$swisandset200102==2 & master$swisandset200203==2 & master$swisandset200304==2 & master$swisandset200405==2, 1, 0)
+master$swisset0205 <- ifelse(master$swisandset200203==2 & master$swisandset200304==2 & master$swisandset200405==2 & master$swisandset200506==2, 1, 0)
+master$swisset0306 <- ifelse(master$swisandset200304==2 & master$swisandset200405==2 & master$swisandset200506==2 & master$swisandset200607==2, 1, 0)
+master$swisset0407 <- ifelse(master$swisandset200405==2 & master$swisandset200506==2 & master$swisandset200607==2 & master$swisandset200708==2, 1, 0)
+
+#-SWIS and EBS
+master$swisebs0407 <- ifelse(master$swisandebs200405==2 & master$swisandebs200506==2 & master$swisandebs200607==2 & master$swisandebs200708==2, 1, 0)
+
+#-SWIS, SET and EBS
+master$swissetebs0407 <- ifelse(master$swisset0407==1 & master$swisebs0407==1, 1, 0) 
+
+
+
+# CREATE 3-YEAR ##############################################################################################################################
+#-SWIS and SET
+master$swisset0002 <- ifelse(master$swisandset200001==2 & master$swisandset200102==2 & master$swisandset200203==2, 1, 0)
+master$swisset0103 <- ifelse(master$swisandset200102==2 & master$swisandset200203==2 & master$swisandset200304==2, 1, 0)
+master$swisset0204 <- ifelse(master$swisandset200203==2 & master$swisandset200304==2 & master$swisandset200405==2, 1, 0)
+master$swisset0305 <- ifelse(master$swisandset200304==2 & master$swisandset200405==2 & master$swisandset200506==2, 1, 0)
+master$swisset0406 <- ifelse(master$swisandset200405==2 & master$swisandset200506==2 & master$swisandset200607==2, 1, 0)
+master$swisset0507 <- ifelse(master$swisandset200506==2 & master$swisandset200607==2 & master$swisandset200708==2, 1, 0)
+
+#-SWIS and EBS
+master$swisebs0406 <- ifelse(master$swisandebs200405==2 & master$swisandebs200506==2 & master$swisandebs200607==2, 1, 0)
+master$swisebs0507 <- ifelse(master$swisandebs200506==2 & master$swisandebs200607==2 & master$swisandebs200708==2, 1, 0)
+
+#-SWIS, SET and EBS
+master$swissetebs0406 <- ifelse(master$swisset0406==1 & master$swisebs0406==1, 1, 0) 
+master$swissetebs0507 <- ifelse(master$swisset0507==1 & master$swisebs0507==1, 1, 0) 
+
+# VARIABLE CREATION #############################################################################################################################
+# create middle-high variable
+master$middlehigh <- ifelse(master$school_schoolgradetypeid==3 | master$school_schoolgradetypeid==4 | master$school_schoolgradetypeid==5, 1, 0)
+
+
+# CROSS-TABULATIONS ###########################################################################################################################
+# Cross-tab of low and high grades for schools designated middle/high schools
+table(master$school_lowgradeid[master$school_schoolgradetypeid>=3], master$school_highgradeid[master$school_schoolgradetypeid>=3], dnn=c("Low Grade", "High Grade"))
+
+# SET #######################################################################
+# Middle and High Schools with 4-year SET data between 00-01 and 03-04
+table(master$middlehigh[master$swisset0003==1])
+
+# Middle and High Schools with 3-year SET data between 00-01 and 02-03
+table(master$middlehigh[master$swisset0002==1])
+
+# Middle and High Schools with 3-year SET data between 01-02 and 03-04
+table(master$middlehigh[master$swisset0103==1])
+
+# Middle and High Schools with 3-year SET data between 02-03 and 04-05
+table(master$middlehigh[master$swisset0204==1])
+
+# Middle and High Schools with 3-year SET data between 03-04 and 05-06
+table(master$middlehigh[master$swisset0305==1])
+
+# Middle and High Schools with 3-year SET data between 04-05 and 06-07
+table(master$middlehigh[master$swisset0406==1])
+
+# Middle and High Schools with 3-year SET data between 05-06 and 07-08
+table(master$middlehigh[master$swisset0507==1])
+
+
+# EBS #######################################################################
+# Middle and High Schools with 4-year EBS data between 04-05 and 07-08
+table(master$middlehigh[master$swisebs0407==1])
+
+# Middle and High Schools with 3-year EBS data between 04-05 and 06-07
+table(master$middlehigh[master$swisebs0406==1])
+
+# Middle and High Schools with 3-year EBS data between 05-06 and 07-08
+table(master$middlehigh[master$swisebs0507==1])
+
+
+# SET & EBS #################################################################
+# Middle and High Schools with 4-year SET & EBS data between 04-05 and 07-08
+table(master$middlehigh[master$swissetebs0407==1])
+
+# Middle and High Schools with 3-year SET & EBS data between 04-05 and 06-07
+table(master$middlehigh[master$swissetebs0406==1])
+
+# Middle and High Schools with 3-year SET & EBS data between 05-06 and 07-08
+table(master$middlehigh[master$swissetebs0507==1])
+
+
+
+# EBS 4-year data
+master$ebs.4yr.midhigh <- ifelse(master$swisebs0407==1 & master$middlehigh==1, 1, 0)
+schools.4yr <- cbind(table(master$school_educationalorgid[master$ebs.4yr.midhigh==1]))
+
+# EBS 3-year data
+master$ebs.3yr.midhigh <- ifelse(master$swisebs0507==1 & master$middlehigh==1, 1, 0)
+schools.3yr <- cbind(table(master$school_educationalorgid[master$ebs.3yr.midhigh==1]))
+
+# EBS 4- and 3-year school org IDs for UO data request
+schools.4yr.3yr <- merge(schools.4yr, schools.3yr, by="row.names", all=TRUE)
+colnames(schools.4yr.3yr) <- c("school_educationalorgid", "schools.4yr", "schools.3yr")
+schools.4yr.3yr <- schools.4yr.3yr[order(as.numeric(schools.4yr.3yr$school_educationalorgid)),]
+cbind("Totals", rbind(colSums(schools.4yr.3yr[,2:3], na.rm=TRUE)))
+
+
+x<-cbind(unique(b$school_educationalorgid))

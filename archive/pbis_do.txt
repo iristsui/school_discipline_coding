@@ -1,0 +1,214 @@
+sink(file="//Users//HumanImpactPartners//Documents//hias//school_discipline_hia//results//pbis_output.txt") #send output to file
+
+# PBIS Do File
+# By Casey Tsui
+# Format: R
+# Last updated: 9/16/10
+
+# Author Comment: This file cleans the variables of interest
+#Calls the functions defined in func.R to perform the analysis and produce charts and tables.
+# NOTE: THIS FILE IS NOW OBSOLETE DUE TO THE RECEIPT OF NEW DATA FILES FROM UO
+#       ON 9/16/10. PLEASE SEE THE NEW FILE IN:
+#       "~//Documents//hias//school_discipline_hia//data//pbis_data//Gottlieb Revised Data Files 9-16-2010"
+
+# INDEPENDENT VARIABLE BIVARIATE ANALYSIS BY YEAR ##############################
+# Combine ebs data and calculate mean scores over each school year, and t-tests
+ebs.group1.by.year <- summarize(b$schoolwide.disc.sys, b$school_schoolyear,
+                                mean, na.rm=TRUE)
+chisq.test(ebs.group1.by.year)
+t.test(b$schoolwide.disc.sys, b$school_schoolyear, na.rm=TRUE)
+
+ebs.group2.by.year <- summarize(b$nonclassroom.set, b$school_schoolyear,
+                                mean, na.rm=TRUE)
+chisq.test(ebs.group2.by.year)
+t.test(b$nonclassroom.set, b$school_schoolyear, na.rm=TRUE)
+
+ebs.group3.by.year <- summarize(b$classroom.set, b$school_schoolyear, mean,
+                                na.rm=TRUE)
+chisq.test(ebs.group3.by.year)
+t.test(b$classroom.set, b$school_schoolyear, na.rm=TRUE)
+
+ebs.group4.by.year <- summarize(b$indiv.student.sys, b$school_schoolyear,
+                                mean, na.rm=TRUE)
+chisq.test(ebs.group4.by.year)
+t.test(b$indiv.student.sys, b$school_schoolyear, na.rm=TRUE)
+
+# GRAPHS #######################################################################
+# Average number of suspensions by school year
+plot(summarize(odr.by.school$oss, by=odr.by.school$school_schoolyear, mean,
+               na.rm=TRUE),
+     main="Number of Suspensions Per School Year",
+     ylab="Average Number of Suspensions",
+     xlab="School Year")
+#myline.fit <- lm(summarize(odr.by.school$oss, by=odr.by.school$school_schoolyear, mean,
+#               na.rm=TRUE))
+#abline(myline.fit)
+#
+#
+# Boxplot of OSS by school year
+boxplot(oss ~ school_schoolyear, data=odr.by.school, main="Suspensions",
+        ylab="Number of OSS", xlab="School Year")
+
+
+# Average number of suspensions by locale
+plot(summarize(odr.by.school$oss, by=odr.by.school$nces_locale, mean,
+               na.rm=TRUE),
+     main="Number of Suspensions Per Locale ID",
+     ylab="Average Number of Suspensions",
+     xlab="Locale ID")
+# Boxplot of OSS by locale
+boxplot(oss ~ nces_locale, data=odr.by.school, main="Suspensions",
+        ylab="Number of OSS", xlab="Locale ID")
+
+# Average number of suspensions by grade type ID
+plot(summarize(odr.by.school$oss, by=odr.by.school$nces_locale, mean,
+               na.rm=TRUE),
+     main="Number of Suspensions Per Grade Type ID",
+     ylab="Average Number of Suspensions",
+     xlab="Grade Type ID")
+# Boxplot of OSS by grade type ID
+boxplot(oss ~ school_gradetypeid, data=odr.by.school, main="Suspensions",
+        ylab="Number of OSS", xlab="Grade ID")
+
+# Average number of expulsions by school year
+plot(summarize(odr.by.school$expulsion, by=odr.by.school$school_schoolyear,
+               mean, na.rm=TRUE),
+     main="Number of Expulsions Per School Year",
+     ylab="Average Number of Expulsions",
+     xlab="School Year")
+# Boxplot of expulsions by school year
+boxplot(expulsion ~ school_schoolyear, data=odr.by.school, main="Expulsions",
+        ylab="Number of Expulsions", xlab="School Year")
+
+
+# Number of Major ODRs by 100 Students by year
+plot(summarize(a$, by=odr.by.school$school_schoolyear, mean, na.rm=TRUE),
+     main="Number of ODRs per 100 Students Per School Year",
+     ylab="Average Number of ODRs per 100 Students",
+     xlab="School Year")
+     
+
+# Average EBS scores by school year
+plot(ebs.group1.by.year,
+     main="Average Score of Schoolwide Discipline System Per School Year",
+     ylab="Average Score",
+     xlab="School Year")
+plot(ebs.group2.by.year,
+     main="Average Score of Non-classroom Set Per School Year",
+     ylab="Average Score",
+     xlab="School Year")
+plot(ebs.group3.by.year,
+     main="Average Score of Classroom Set Per School Year",
+     ylab="Average Score",
+     xlab="School Year")
+plot(ebs.group4.by.year,
+     main="Average Score of Individual Student System Per School Year",
+     ylab="Average Score",
+     xlab="School Year")
+
+ebs.groups.by.year <- merge(ebs.group1.by.year, ebs.group2.by.year,
+                            by="b$school_schoolyear")
+ebs.groups.by.year <- merge(ebs.groups.by.year, ebs.group3.by.year,
+                            by="b$school_schoolyear")
+ebs.groups.by.year <- merge(ebs.groups.by.year, ebs.group4.by.year,
+                            by="b$school_schoolyear")
+
+# All 4 EBS groups on one plot
+plot(rep(ebs.groups.by.year[, 1], 4),
+     c(ebs.groups.by.year[, 2],
+       ebs.groups.by.year[, 3],
+       ebs.groups.by.year[, 4],
+       ebs.groups.by.year[, 5]),
+     col=rep(c("red", "green", "blue", "purple"),
+             e=length(ebs.groups.by.year[, 1])),
+     pch=rep(c(15:18), e=length(ebs.groups.by.year[, 1])),
+     main="Average Scores of All 4 EBS Measures Per School Year",
+     ylab="Average Score",
+     xlab="School Year")
+     axis(1, at=1:4, labels=c("2004-05", "2005-06", "2006-07", "2007-08"))
+     
+     
+
+# LOGISTIC REGRESSION MODELS ###################################################
+# ODR
+# logistic regression model 1 - demographics only
+glm(odr ~ school.grade.06 +
+          school.grade.07 +
+          school.grade.08 +
+          school.grade.09 +
+          school.grade.10 +
+          school.grade.11 +
+          school.grade.12 +
+          school.male +
+          school.afram +
+          school.asian +
+          school.latino +
+          school.white +
+          school.frpm +
+          school.total.enroll +
+          school.fte.per.student,
+          family=binomial(link="logit"), data=, ) 
+#logistic regression model 2 - 
+glm(odr ~ school.grade + school.gender + school.ethnicity + school.frpm +
+          school.total.enroll + school.fte.student,
+          family=binomial(link="logit"), data=, ) 
+#logistic regression model 3 - 
+glm(odr ~    school.grade + school.gender + school.ethnicity + school.frpm +
+          school.total.enroll + school.fte.student,
+
+          family=binomial(link="logit"), data=, ) 
+#logistic regression model 4 - 
+glm( ~    school.grade + school.gender + school.ethnicity + school.frpm +
+          school.total.enroll + school.fte.student,
+
+          family=binomial(link="logit"), data=, ) 
+#logistic regression model 5 - 
+glm( ~    school.grade + school.gender + school.ethnicity + school.frpm +
+          school.total.enroll + school.fte.student,
+
+          family=binomial(link="logit"), data=, ) 
+
+# SUSPENSIONS
+# logistic regression model 1 - demographics only
+glm(susp ~ school.grade + school.gender + school.ethnicity + school.frpm +
+           school.total.enroll + school.fte.student,
+           family=binomial(link="logit"), data=, ) 
+#logistic regression model 2 - 
+glm(susp ~  
+          family=binomial(link="logit"), data=, ) 
+#logistic regression model 3 - 
+glm( ~ 
+          family=binomial(link="logit"), data=, ) 
+#logistic regression model 4 - 
+glm( ~ 
+          family=binomial(link="logit"), data=, ) 
+#logistic regression model 5 - 
+glm( ~ 
+          family=binomial(link="logit"), data=, ) 
+
+# EXPULSIONS
+# logistic regression model 1 - demographics only
+glm(expulsions ~ school.grade + school.gender + school.ethnicity + school.frpm +
+          school.total.enroll + school.fte.student,
+          family=binomial(link="logit"), data=, ) 
+#logistic regression model 2 - 
+glm(expulsions ~  
+          family=binomial(link="logit"), data=, ) 
+#logistic regression model 3 - 
+glm( ~ 
+          family=binomial(link="logit"), data=, ) 
+#logistic regression model 4 - 
+glm( ~ 
+          family=binomial(link="logit"), data=, ) 
+#logistic regression model 5 - 
+glm( ~ 
+          family=binomial(link="logit"), data=, ) 
+
+
+# NON-LINEAR REGRESSION MODELS #################################################
+#non-linear mixed effects model
+nlme(odr_dayssuspended ~ 
+#non-linear mixed effects model
+nlme(odr_daysexpelled ~  
+
+sink() #close link to output file

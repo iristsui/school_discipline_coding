@@ -1,0 +1,23 @@
+
+
+func <- function(min, max, gap) {
+  new.list <- vector("list", 3)
+  new.list$varrange <- min:max
+  new.list$gap <- gap
+  new.list$l <- length(varrange)
+  return(new.list)
+}
+
+func <- function(min, max, gap) {
+  new.list <- list(min:max, gap, length(min:max))
+  print(new.list)
+  names(new.list) <- c("varrange", "gap", "l")
+  print(names(new.list))
+}
+
+func2 <- function() {
+  func(
+
+
+
+usenames <- paste("a", c(11:15, 100:112), "_a", c(11:15, 100:112) - c(rep(1, 5), rep(18, 13)), sep="")

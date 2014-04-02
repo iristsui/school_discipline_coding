@@ -1,0 +1,186 @@
+//PBIS multivariable analysis coding file
+//By Casey Tsui
+//Format: Stata
+//Last updated: 5/24/11
+
+
+// examples
+*xi:xtgee major year ebsimplementationaverage highschool maleperc aframperc asianperc latinoperc frpmperc studperfte nces_member i.urbanicity, i(school_educationalorgid) t(year) fam(nb) corr(ar1) robust eform 
+*xi:xtgee percunexcused year ebsimplementationaverage highschool maleperc aframperc asianperc latinoperc frpmperc studperfte nces_member i.urbanicity, i(school_educationalorgid) t(year) fam(binomial) corr(ar1) robust eform 
+
+
+
+//Storing estimates for range plot graphing in R////////////////////////////////
+//FULL DATA - PBIS 0-1%
+log using "Z:\home\casey\documents\HIP\logs\pbis_1_unit\stata_gee_log_pbis_1_unit.txt", text replace
+cd Z:\home\casey\documents\HIP\data\stata_gee_estimates\pbis_1_unit
+insheet using "Z:\home\casey\documents\HIP\data\lm_data.csv", comma clear
+
+destring , ignore("NA") replace
+
+local xvars "ebsimplementationaverage setimplementationaverage ebscriterion8080 setcriterion8080 implementationaverage"
+local yvars "iss oss ossafram ossasian osslatino osswhite major majorafram majorasian majorlatino majorwhite odr numstud numstudafram numstudasian numstudlatino numstudwhite aframmajoroverwhite asianmajoroverwhite latinomajoroverwhite aframmajordispindex asianmajordispindex latinomajordispindex aframossdispindex asianossdispindex latinoossdispindex recid recidafram recidasian recidlatino recidwhite  gradrate attendrate percunexcused percunexcusedafram percunexcusedasian percunexcusedlatino percunexcusedwhite readingscore mathscore"
+local covars "highschool maleperc aframperc asianperc latinoperc frpmperc studperfte nces_member i.urbanicity"
+
+foreach xvar of local xvars {
+  if "`xvar'" == "ebsimplementationaverage" local x = 1
+  if "`xvar'" == "setimplementationaverage" local x = 2
+  if "`xvar'" == "ebscriterion8080" local x = 3
+  if "`xvar'" == "setcriterion8080" local x = 4
+  if "`xvar'" == "implementationaverage" local x = 5
+  foreach yvar of local yvars {
+    if "`yvar'" == "iss" local y = 1
+    if "`yvar'" == "oss" local y = 2
+    if "`yvar'" == "ossafram" local y = 3
+    if "`yvar'" == "ossasian" local y = 4
+    if "`yvar'" == "osslatino" local y = 5
+    if "`yvar'" == "osswhite" local y = 6
+    if "`yvar'" == "major" local y = 7
+    if "`yvar'" == "majorafram" local y = 8
+    if "`yvar'" == "majorasian" local y = 9
+    if "`yvar'" == "majorlatino" local y = 10
+    if "`yvar'" == "majorwhite" local y = 11
+    if "`yvar'" == "odr" local y = 12
+    if "`yvar'" == "numstud" local y = 13
+    if "`yvar'" == "numstudafram" local y = 14
+    if "`yvar'" == "numstudasian" local y = 15
+    if "`yvar'" == "numstudlatino" local y = 16 
+    if "`yvar'" == "numstudwhite" local y = 17
+    if "`yvar'" == "aframmajoroverwhite" local y = 18
+    if "`yvar'" == "asianmajoroverwhite" local y = 19
+    if "`yvar'" == "latinomajoroverwhite" local y = 20
+    if "`yvar'" == "aframmajordispindex" local y = 21
+    if "`yvar'" == "asianmajordispindex" local y = 22
+    if "`yvar'" == "latinomajordispindex" local y = 23
+    if "`yvar'" == "aframossdispindex" local y = 24
+    if "`yvar'" == "asianossdispindex" local y = 25
+    if "`yvar'" == "latinoossdispindex" local y = 26
+    if "`yvar'" == "recid" local y = 27
+    if "`yvar'" == "recidafram" local y = 28
+    if "`yvar'" == "recidasian" local y = 29
+    if "`yvar'" == "recidlatino" local y = 30
+    if "`yvar'" == "recidwhite" local y = 31
+    if "`yvar'" == "gradrate" local y = 32
+    if "`yvar'" == "attendrate" local y = 33
+    if "`yvar'" == "percunexcused" local y= 34
+    if "`yvar'" == "percunexcusedafram" local y= 35
+    if "`yvar'" == "percunexcusedasian" local y= 36
+    if "`yvar'" == "percunexcusedlatino" local y= 37
+    if "`yvar'" == "percunexcusedwhite" local y= 38
+    if "`yvar'" == "readingscore" local y = 39
+    if "`yvar'" == "mathscore" local y = 40
+
+
+    local cor "ar1"
+    if `y' <= 26 local fam "nb"
+    if `y' >= 27 local fam "binomial"
+
+    local options "i(school_educationalorgid) t(year) family(`fam') corr(`cor') eform robust iterate(200)"
+
+    if `y' <= 26 capture noisily xi:xtgee `yvar' i.year `xvar' `covars', `options'
+    if `y' >= 27 capture noisily xi:xtgee `yvar' i.year `xvar' `covars' if `yvar' != 0 & `yvar' != 1, `options'
+    
+    parmest , saving(model_`x'_`y'.dta, replace)
+  }
+}
+
+forvalues x=1/5 {
+  forvalues y=1/40 {
+    capture use "Z:\home\casey\documents\HIP\data\stata_gee_estimates\pbis_1_unit\model_`x'_`y'.dta", clear
+    capture outsheet using "Z:\home\casey\documents\HIP\data\stata_gee_estimates\pbis_1_unit\model_`x'_`y'.csv", comma replace
+    capture erase "Z:\home\casey\documents\HIP\data\stata_gee_estimates\pbis_1_unit\model_`x'_`y'.dta"
+  }
+}
+log close
+
+
+//Storing estimates for range plot graphing in R////////////////////////////////
+//FULL DATA - EBS 0-100%
+log using "Z:\home\casey\documents\HIP\logs\stata_gee_log_pbis_full.txt", text replace
+cd Z:\home\casey\documents\HIP\data\stata_gee_estimates\pbis_full
+insheet using "Z:\home\casey\documents\HIP\data\lm_data.csv", comma clear
+
+destring , ignore("NA") replace
+
+local xvars "ebsimplementationaverage setimplementationaverage ebscriterion8080 setcriterion8080 implementationaverage"
+local yvars "iss oss ossafram ossasian osslatino osswhite major majorafram majorasian majorlatino majorwhite odr numstud numstudafram numstudasian numstudlatino numstudwhite aframmajoroverwhite asianmajoroverwhite latinomajoroverwhite aframmajordispindex asianmajordispindex latinomajordispindex aframossdispindex asianossdispindex latinoossdispindex recid recidafram recidasian recidlatino recidwhite  gradrate attendrate percunexcused percunexcusedafram percunexcusedasian percunexcusedlatino percunexcusedwhite readingscore mathscore"
+local covars "highschool maleperc aframperc asianperc latinoperc frpmperc studperfte nces_member i.urbanicity"
+
+replace ebsimplementationaverage = ebsimplementationaverage / 100
+replace setimplementationaverage = setimplementationaverage / 100
+replace implementationaverage = implementationaverage / 100
+
+foreach xvar of local xvars {
+  if "`xvar'" == "ebsimplementationaverage" local x = 1
+  if "`xvar'" == "setimplementationaverage" local x = 2
+  if "`xvar'" == "ebscriterion8080" local x = 3
+  if "`xvar'" == "setcriterion8080" local x = 4
+  if "`xvar'" == "implementationaverage" local x = 5
+  foreach yvar of local yvars {
+    if "`yvar'" == "iss" local y = 1
+    if "`yvar'" == "oss" local y = 2
+    if "`yvar'" == "ossafram" local y = 3
+    if "`yvar'" == "ossasian" local y = 4
+    if "`yvar'" == "osslatino" local y = 5
+    if "`yvar'" == "osswhite" local y = 6
+    if "`yvar'" == "major" local y = 7
+    if "`yvar'" == "majorafram" local y = 8
+    if "`yvar'" == "majorasian" local y = 9
+    if "`yvar'" == "majorlatino" local y = 10
+    if "`yvar'" == "majorwhite" local y = 11
+    if "`yvar'" == "odr" local y = 12
+    if "`yvar'" == "numstud" local y = 13
+    if "`yvar'" == "numstudafram" local y = 14
+    if "`yvar'" == "numstudasian" local y = 15
+    if "`yvar'" == "numstudlatino" local y = 16 
+    if "`yvar'" == "numstudwhite" local y = 17
+    if "`yvar'" == "aframmajoroverwhite" local y = 18
+    if "`yvar'" == "asianmajoroverwhite" local y = 19
+    if "`yvar'" == "latinomajoroverwhite" local y = 20
+    if "`yvar'" == "aframmajordispindex" local y = 21
+    if "`yvar'" == "asianmajordispindex" local y = 22
+    if "`yvar'" == "latinomajordispindex" local y = 23
+    if "`yvar'" == "aframossdispindex" local y = 24
+    if "`yvar'" == "asianossdispindex" local y = 25
+    if "`yvar'" == "latinoossdispindex" local y = 26
+    if "`yvar'" == "recid" local y = 27
+    if "`yvar'" == "recidafram" local y = 28
+    if "`yvar'" == "recidasian" local y = 29
+    if "`yvar'" == "recidlatino" local y = 30
+    if "`yvar'" == "recidwhite" local y = 31
+    if "`yvar'" == "gradrate" local y = 32
+    if "`yvar'" == "attendrate" local y = 33
+    if "`yvar'" == "percunexcused" local y= 34
+    if "`yvar'" == "percunexcusedafram" local y= 35
+    if "`yvar'" == "percunexcusedasian" local y= 36
+    if "`yvar'" == "percunexcusedlatino" local y= 37
+    if "`yvar'" == "percunexcusedwhite" local y= 38
+    if "`yvar'" == "readingscore" local y = 39
+    if "`yvar'" == "mathscore" local y = 40
+
+
+    local cor "ar1"
+    if `y' <= 26 local fam "nb"
+    if `y' >= 27 local fam "binomial"
+
+    local options "i(school_educationalorgid) t(year) family(`fam') corr(`cor') eform robust iterate(200)"
+
+    if `y' <= 26 capture noisily xi:xtgee `yvar' i.year `xvar' `covars', `options'
+    if `y' >= 27 capture noisily xi:xtgee `yvar' i.year `xvar' `covars' if `yvar' != 0 & `yvar' != 1, `options'
+    
+    parmest , saving(model_`x'_`y'.dta, replace)
+  }
+}
+
+forvalues x=1/5 {
+  forvalues y=1/40 {
+    capture use "Z:\home\casey\documents\HIP\data\stata_gee_estimates\pbis_full\model_`x'_`y'.dta", clear
+    capture outsheet using "Z:\home\casey\documents\HIP\data\stata_gee_estimates\pbis_full\model_`x'_`y'.csv", comma replace
+    capture erase "Z:\home\casey\documents\HIP\data\stata_gee_estimates\pbis_full\model_`x'_`y'.dta"
+  }
+}
+log close
+
+
+
+*ice major year ebsimplementationaverage highschool maleperc aframperc asianperc latinoperc frpmperc studperfte nces_member urbanicity2-urbanicity4 using imputed, m(5) seed(8675309)

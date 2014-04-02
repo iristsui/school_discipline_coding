@@ -1,0 +1,396 @@
+sink(file="//Users//HumanImpactPartners//Documents//hias//school_discipline_hia//results//pbis_output.txt") #send output to file
+
+# PBIS Cleaning File
+# By Casey Tsui
+# Format: R
+# Last updated: 9/16/10
+
+# Author Comment: This file cleans the variables of interest
+#This is where all the ugly stuff lives - taking care of missing values, merging data frames, handling outliers. 
+# NOTE: THIS FILE IS NOW OBSOLETE DUE TO THE RECEIPT OF NEW DATA FILES FROM UO
+#       ON 9/16/10. PLEASE SEE THE NEW FILE IN:
+#       "~//Documents//hias//school_discipline_hia//data//pbis_data//Gottlieb Revised Data Files 9-16-2010"
+
+library(Hmisc) # Hmisc needed to change variable names to lowercase
+
+# PRELIMINARY CLEANING #########################################################
+# Convert all variable names to lowercase
+a <- upData(a, lowernames=TRUE)
+b <- upData(b, lowernames=TRUE)
+c <- upData(c, lowernames=TRUE)
+d <- upData(d, lowernames=TRUE)
+
+# Include only schools with 3-year consecutive data 2005-06 to 2007-08
+#
+
+# MERGING ######################################################################
+# Merge a and d
+a <- merge(a, d, by=colnames(a), all=TRUE)
+a <- a[order(a$school_educationalorgid, a$school_schoolyear), ]
+
+
+# DESCRIPTIVE VARIABLE CREATION ################################################
+# Create grade type ID
+a$school_gradetypeid <- ifelse(a$nces_gslo == "09" & a$nces_gshi == 12,
+                               2,         # 2=all high schools 9-12
+                               ifelse((a$nces_gslo == "06" |
+                                       a$nces_gslo == "07") &
+                                      a$nces_gshi == 8,
+                                      1,  # 1=all middle schools 6-8 or 7-8
+                                      3)) # 3=mixed schools
+
+
+
+# Create staff response rate for ebs
+mymat <- matrix(data=NULL, nrow=172, ncol=1)
+k <- 1
+for (i in 1:43) {
+  for (j in 1:4) {
+    mymat[k, 1] <- ebs.surveys[j, i]
+    k <- k + 1
+  }
+}
+merge.ebs.tests <- cbind(unique(b$school_educationalorgid),
+                   rep(c(200405, 200506, 200607, 200708), 43), mymat)
+merge2 <- merge(a, merge.ebs.tests, by.x=c("school_educationalorgid",
+                "school_schoolyear"), by.y=c("a", "b"))
+
+
+# Create proportions of students for each grade out of total enrolled
+a$nces.g06.prop <- a$nces_g06 / a$nces_member
+a$nces.g07.prop <- a$nces_g07 / a$nces_member
+a$nces.g08.prop <- a$nces_g08 / a$nces_member
+a$nces.g09.prop <- a$nces_g09 / a$nces_member
+a$nces.g10.prop <- a$nces_g10 / a$nces_member
+a$nces.g11.prop <- a$nces_g11 / a$nces_member
+a$nces.g12.prop <- a$nces_g12 / a$nces_member
+
+# DEPENDENT VARIABLE CREATION ##################################################
+# Suspension rates
+#schoolyears <- list(200405, 200506, 200607, 200708)
+#for (i in c(1:4)) {
+#  schoolyears[i]
+#  table(c$school_educationalorgid[c$school_schoolyear == schoolyears[i]],
+#        c$odr_admindecisionid[c$school_schoolyear == schoolyears[i]])
+#}
+
+# Create ODR outcome variables
+susp.y1 <- rep(200405, 42)
+susp.y2 <- rep(200506, 42)
+susp.y3 <- rep(200607, 42)
+susp.y4 <- rep(200708, 42)
+
+susp.x1 <- cbind(susp.y1,
+                 table(c$school_educationalorgid[c$school_schoolyear == 200405],
+                       c$odr_admindecisionid[c$school_schoolyear == 200405]))
+susp.x2 <- cbind(susp.y2,
+                 table(c$school_educationalorgid[c$school_schoolyear == 200506],
+                       c$odr_admindecisionid[c$school_schoolyear == 200506]))
+susp.x3 <- cbind(susp.y3,
+                 table(c$school_educationalorgid[c$school_schoolyear == 200607],
+                       c$odr_admindecisionid[c$school_schoolyear == 200607]))
+susp.x4 <- cbind(susp.y4,
+                 table(c$school_educationalorgid[c$school_schoolyear == 200708],
+                       c$odr_admindecisionid[c$school_schoolyear == 200708]))
+susp.x <- rbind(susp.x1, susp.x2, susp.x3, susp.x4)
+rm(susp.y1, susp.y2, susp.y3, susp.y4, susp.x1, susp.x2, susp.x3, susp.x4)
+#susp.x <- susp.x[order(c(as.numeric(rownames(susp.x)), susp.y1), ]
+colnames(susp.x) <- c("susp.y1", "time_in_office", "loss_of_priv",
+                      "student_conf", "parent_contact", "detention",
+                      "indiv_instruc", "iss", "oss", "sat_school", "expulsion",
+                      "other", "unknown", "bus_susp", "restitution")
+odr.by.school <- merge(a, susp.x,
+                by.x=c("school_educationalorgid", "school_schoolyear"),
+                by.y=c("row.names", "susp.y1"), all=TRUE) 
+# odr.by.school has separate odr count variables per school per year
+rm(susp.x)
+
+# Create out-of-school suspension rate by 100 students for each school
+odr.by.school$susp.rate <- NA
+
+for (i in 1:nrow(odr.by.school)) {
+  odr.by.school$susp.rate[i] <- sum(odr.by.school$oss[i] /
+                                    odr.by.school$nces_member[i] * 100,
+                                    na.rm=TRUE)
+}
+
+# Create expulsion rate by 100 students for each school
+odr.by.school$expul.rate <- NA
+
+for (i in 1:nrow(odr.by.school)) {
+  odr.by.school$expul.rate[i] <- sum(odr.by.school$expulsion[i] /
+                                     odr.by.school$nces_member[i] * 100,
+                                     na.rm=TRUE)
+}
+
+# Create number of suspension events per student (recidivism) per year
+table(c$student_studentid[c$odr_admindecisionid == 7 |
+                          c$odr_admindecisionid == 8],
+      c$school_schoolyear[c$odr_admindecisionid == 7 |
+                          c$odr_admindecisionid == 8])
+
+
+# Create number of major ODRs per 100 students per year
+x <- number of major ODRs / nces_member * 100
+summarize(x, school_schoolyear, mean)
+
+# Create percent of students with major or minor ODR
+students <- number of students
+perc.students <- students / nces_member #by school
+
+# Create number of major and minor events per student (total enrollment)
+total number of events / nces_member
+
+
+# INDEPENDENT VARIABLE CREATION ################################################
+# Create 4 ebs scale variables 
+b$schoolwide.disc.sys <- NA
+b$nonclassroom.set    <- NA
+b$classroom.set       <- NA
+b$indiv.student.sys   <- NA
+
+# Loop over number of observations in dataset b and add across specified vars
+# excluding missing values
+for (i in 1:nrow(b)) {
+  b$schoolwide.disc.sys[i] <- sum(b$sasurvey_studentexpectationss[i] +
+                                  b$sasurvey_behaviorstaughts[i] +
+                                  b$sasurvey_behaviorsrewardeds[i] +
+                                  b$sasurvey_problembehaviorsdefineds[i] +
+                                  b$sasurvey_consequencesdefineds[i] +
+                                  b$sasurvey_officeclassroomdistinctionss[i] +
+                                  b$sasurvey_optionsexists[i] +
+                                  b$sasurvey_emergencyproceduress[i] +
+                                  b$sasurvey_behaviorsupportteams[i] +
+                                  b$sasurvey_administratoronteams[i] +
+                                  b$sasurvey_datasummarizeds[i] +
+                                  b$sasurvey_patternsreporteds[i] +
+                                  b$sasurvey_informingfamiliess[i] +
+                                  b$sasurvey_boostertrainings[i] +
+                                  b$sasurvey_supportteambudgets[i] +
+                                  b$sasurvey_allstaffinvolveds[i] +
+                                  b$sasurvey_trainingfromdistricts[i] +
+                                  b$sasurvey_districtreports[i],
+                                  na.rm=TRUE)
+
+  b$nonclassroom.set[i] <- sum(b$sasurvey_ncrbehaviorss[i] +
+                               b$sasurvey_ncrbehaviorstaughts[i] +
+                               b$sasurvey_ncrsupervisions[i] +
+                               b$sasurvey_ncrrewardss[i] +
+                               b$sasurvey_ncrfeaturesmodifieds[i] +
+                               b$sasurvey_ncrmovementschedulings[i] +
+                               b$sasurvey_ncrstaffsupervisionskillss[i] +
+                               b$sasurvey_ncrbehaviorevaluateds[i] +
+                               b$sasurvey_ncrallstaffs[i],
+                               na.rm=TRUE)
+
+  b$classroom.set[i] <- sum(b$sasurvey_crbehaviorsdefineds[i] +
+                            b$sasurvey_crproblembehaviorss[i] +
+                            b$sasurvey_crbehaviorstaughts[i] +
+                            b$sasurvey_crbehaviorsrewardeds[i] +
+                            b$sasurvey_crconsequencess[i] +
+                            b$sasurvey_crproceduress[i] +
+                            b$sasurvey_croptionsexists[i] +
+                            b$sasurvey_crmaterialsmatchabilitys[i] +
+                            b$sasurvey_cracademicsuccesss[i] +
+                            b$sasurvey_crteachersassisteds[i] +
+                            b$sasurvey_crtransitionsefficients[i],
+                            na.rm=TRUE)
+
+  b$indiv.student.sys[i] <- sum(b$sasurvey_indregularassessmentss[i] +
+                                b$sasurvey_indrequestassistanceprocesss[i] +
+                                b$sasurvey_indbehaviorsupportteams[i] +
+                                b$sasurvey_indbehavioralassessments[i] +
+                                b$sasurvey_indlocalresourcess[i] +
+                                b$sasurvey_indfamilymemberss[i] +
+                                b$sasurvey_indfamilytrainings[i] +
+                                b$sasurvey_indbehaviormonitoreds[i],
+                                na.rm=TRUE)
+}
+
+# Validate additions by calculating the ranges of the aggregate variables
+range(b$schoolwide.disc.sys, na.rm=TRUE) # Should be 0-36
+range(b$nonclassroom.set,    na.rm=TRUE) # Should be 0-18
+range(b$classroom.set,       na.rm=TRUE) # Should be 0-22
+range(b$indiv.student.sys,   na.rm=TRUE) # Should be 0-16
+
+
+
+# ADDITIONAL VARIABLE CREATION #################################################
+# Create total instruction time
+diff in num of ODRs pre-post multiplied by time factor found in Muscott article
+
+# Create leadership/admin time
+diff in num of ODRs pre-post multiplied by time factor found in Muscott article
+
+# Create teacher time
+diff in num of ODRs pre-post multiplied by time factor found in Muscott article
+
+
+# CROSS-TABULATIONS ############################################################
+### Demographic means over 4 years
+
+var1 <- DemoMeans(a$nces_member) # summarize(a$nces_member, a$school_educationalorgid, mean)
+var2 <- DemoMeans(a$nces_totfrl)
+var3 <- DemoMeans(a$nces_fte)
+
+demo.table.school <- cbind(var1, var2, var3)
+colnames(demo.table.school) <- c("Total Enrollment",
+         "Total Students Eligible for FRPM", "Number of FTE")
+demo.table.school
+
+ethnicities <- list(a$nces_am, a$nces_asian, a$nces_black, a$nces_hisp,
+                    a$nces_white)
+demo.table.eths <- cbind(sapply(ethnicities, DemoMeans))
+colnames(demo.table.eths) <- c("American Indian", "Asian", "Black", "Latino",
+                               "White")
+rownames(demo.table.eths) <- c(unique(a$school_educationalorgid))
+
+### gender by grade
+tabs <- table(c$student_gradeid, c$student_genderid)
+prop.table(tabs, margin=2) * 100
+
+
+### Mean number of students by ethnicity in each school per year
+by(odr.by.school[, 14:18], list(schoolyear = odr.by.school$school_schoolyear,
+                    orgid = odr.by.school$school_educationalorgid), mean)
+
+### mean number of odr outcomes per year
+mean.odr <- by(odr.by.school[, 19:32], odr.by.school$school_schoolyear, mean)
+
+### Number of major ODRs per 100 students per year
+major.odr.100 <- (c$odr_problembehaviorid / nces_member) * 100
+
+
+
+### Mean free and reduced price meals, by school from 04-05 to 07-08
+mean.frp <- cbind(tapply(a$nces_totfrl, a$school_educationalorgid, mean))
+
+
+e <- (tapply(a$nces_am, 
+r <- a$school_educationalorgid, mean))
+s <- paste(e,r)
+
+s <- c(e,r)
+
+#test- list of matrices
+mymats <- list()
+for (i in 1:5) {
+   myname <- paste('mymatrix', i, sep='')
+   mymats[[myname]] <- matrix
+}
+
+
+### Calculate # of FTE per 100 students
+a$fte.per.student <- a$nces_fte / a$nces_member * 100
+
+### Calculate % Free and Reduced Price Meal students
+a$percent.frpm <- a$nces_totfrl / a$nces_member * 100
+
+####Adding a colsum to table
+d1 <- table(b$school_educationalorgid, b$school_schoolyear)
+total.col <- colSums(d1)
+d2 <- rbind(d1, total.col)
+total.row <- rowSums(d2)
+cbind(d2, total.row)
+
+
+### EBS surveys per school per year
+#table(b$sasurvey_id, b$school_educationalorgid)
+
+
+
+
+### ODR by school year
+num.odr <- table(c$school_schoolyear, c$odr_admindecisionid)
+
+# days suspended and expelled
+#cbind(tapply(c$odr_dayssuspended, c$school_schoolyear, mean, na.rm=TRUE))
+summarize(c$odr_dayssuspended, c$school_schoolyear, mean, na.rm=TRUE)
+
+#cbind(tapply(c$odr_daysexpelled, c$school_schoolyear, mean, na.rm=TRUE))
+summarize(c$odr_daysexpelled, c$school_schoolyear, mean, na.rm=TRUE)
+
+
+
+
+
+tabs <- table(c$odr_dayssuspended, c$school_schoolyear)
+prop.table(tabs, margin=2) * 100
+
+table(c$odr_daysexpelled, c$school_schoolyear)
+prop.table(tabs, margin=2) * 100
+
+
+### odr by grade
+odr.by.grade <- table(c$student_gradeid, c$odr_admindecisionid)
+##
+cbind(tapply(c$odr_dayssuspended, c$student_gradeid, mean, na.rm=TRUE))
+
+cbind(tapply(c$odr_daysexpelled, c$student_gradeid, mean, na.rm=TRUE))
+
+
+
+###
+cbind(tapply(c$odr_dayssuspended[c$school_schoolyear == 200405],
+             c$student_gradeid[c$school_schoolyear == 200405],
+             mean, na.rm=TRUE))
+cbind(tapply(c$odr_dayssuspended[c$school_schoolyear == 200506],
+             c$student_gradeid[c$school_schoolyear == 200506],
+             mean, na.rm=TRUE))
+cbind(tapply(c$odr_dayssuspended[c$school_schoolyear == 200607],
+             c$student_gradeid[c$school_schoolyear == 200607],
+             mean, na.rm=TRUE))
+cbind(tapply(c$odr_dayssuspended[c$school_schoolyear == 200708],
+             c$student_gradeid[c$school_schoolyear == 200708],
+             mean, na.rm=TRUE))
+
+cbind(tapply(c$odr_daysexpelled[c$school_schoolyear == 200405],
+             c$student_gradeid[c$school_schoolyear == 200405],
+             mean, na.rm=TRUE))
+cbind(tapply(c$odr_daysexpelled[c$school_schoolyear == 200506],
+             c$student_gradeid[c$school_schoolyear == 200506],
+             mean, na.rm=TRUE))
+cbind(tapply(c$odr_daysexpelled[c$school_schoolyear == 200607],
+             c$student_gradeid[c$school_schoolyear == 200607],
+             mean, na.rm=TRUE))
+cbind(tapply(c$odr_daysexpelled[c$school_schoolyear == 200708],
+             c$student_gradeid[c$school_schoolyear == 200708],
+             mean, na.rm=TRUE))
+
+###
+tabs <- table(c$odr_dayssuspended, c$student_gradeid)
+prop.table(tabs, margin=2) * 100
+
+table(c$odr_daysexpelled, c$student_gradeid)
+prop.table(tabs, margin=2) * 100
+##
+
+
+### odr by gender
+table(c$student_genderid, c$odr_admindecisionid)
+
+cbind(tapply(c$odr_dayssuspended, c$student_genderid, mean, na.rm=TRUE))
+
+cbind(tapply(c$odr_daysexpelled, c$student_genderid, mean, na.rm=TRUE))
+
+tabs <- table(c$odr_dayssuspended, c$student_genderid)
+prop.table(tabs, margin=2) * 100
+
+table(c$odr_daysexpelled, c$student_genderid)
+prop.table(tabs, margin=2) * 100
+
+
+### odr by ethnicity
+table(c$student_ethnicityid, c$odr_admindecisionid)
+
+cbind(tapply(c$odr_dayssuspended, c$student_ethnicityid, mean, na.rm=TRUE))
+
+cbind(tapply(c$odr_daysexpelled, c$student_ethnicityid, mean, na.rm=TRUE))
+
+tabs <- table(c$odr_dayssuspended, c$student_ethnicityid)
+prop.table(tabs, margin=2) * 100
+
+table(c$odr_daysexpelled, c$student_ethnicityid)
+prop.table(tabs, margin=2) * 100
+
+sink()

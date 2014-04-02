@@ -1,0 +1,43 @@
+
+vars <- c("school_educationalorgid", "oss", "major", "recid", "num.stud",
+          "perc.unexcused", "grad.rate", "year",
+          "ebs.implementationaverage",
+          "set.implementationaverage",
+          "high.school",
+          "male.perc", "afram.perc", "asian.perc", "latino.perc", "white.perc",
+          "frpm.perc",
+          "stud.per.fte", "nces_member", "urbanicity")
+
+
+lm.data.mi <- lm.data[, vars]
+lm.data.mi$year <- factor(lm.data.mi$year)
+
+mi.data <- mice(lm.data.mi)
+
+model.2 <- with(data=mi.data, exp=gee(recid~year+ebs.implementationaverage+high.school+
+                           male.perc+afram.perc+asian.perc+latino.perc+
+                           frpm.perc+stud.per.fte+nces_member+urbanicity,
+                           id=school_educationalorgid,
+                           family=binomial, corstr="AR-M", Mv=1))
+
+lm.data$year <- factor(lm.data$year)
+model.1 <- gee(recid~year+ebs.implementationaverage+high.school+
+                           male.perc+afram.perc+asian.perc+latino.perc+
+                           frpm.perc+stud.per.fte+nces_member+urbanicity,
+                           id=school_educationalorgid, data=lm.data,
+                           family=binomial, corstr="AR-M", Mv=1)
+
+
+
+environment(pool.gee) <- asNamespace("mice")
+pool.gee(model.2)
+
+
+
+
+model.2 <- with(data=mi.data, exp=gee(recid~year+ebs.implementationaverage+high.school+
+                           male.perc+afram.perc+asian.perc+latino.perc+
+                           frpm.perc+stud.per.fte+nces_member+urbanicity,
+                           id=school_educationalorgid,
+                           family=binomial, corstr="AR-M", Mv=1))
+

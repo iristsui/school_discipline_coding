@@ -1,0 +1,366 @@
+//PBIS multivariable analysis coding file - archive
+//By Casey Tsui
+//Format: Stata
+//Last updated: 4/6/11
+
+cd Z:\home\casey\documents\HIP\
+
+log using "/home/casey/documents/HIP/results/logfile.txt", text replace
+clear all
+use "Z:\home\casey\documents\HIP\data\lm_data.dta", clear
+
+destring , ignore("NA") replace
+
+local xvars "ebsimplementationaverage set_implementationaverage ebscriterion8080 set_criterion8080"
+local yvars "iss oss major odr recid numstud gradrate attendrate"
+local covars "highschool maleprop aframprop asianprop latinoprop frpmprop fte100student nces_member i.urbanicity"
+
+foreach xvar of local xvars {
+  local test= substr("`xvar'", 1, 3)
+  if "`test'" == "ebs" local x = 1
+  if "`test'" == "set" local x = 2
+  foreach yvar of local yvars {
+    if "`yvar'" == "iss" local y = 1
+    if "`yvar'" == "oss" local y = 2 
+    if "`yvar'" == "major" local y = 3 
+    if "`yvar'" == "odr" local y = 4 
+    if "`yvar'" == "recid" local y = 5
+    if "`yvar'" == "numstud" local y = 6 
+    if "`yvar'" == "gradrate" local y = 7
+    if "`yvar'" == "attendrate" local y = 8
+
+    local cor "ar1"
+    if `y' <= 6 local fam "nb"
+    if `y' >= 7 local fam "gaussian"
+
+    local options1 "i(school_educationalorgid) t(year) family(`fam') corr(`cor') eform robust iterate(200)"
+    local options2 "i(school_educationalorgid) t(year) family(`fam') corr(`cor') robust iterate(200)"
+
+     if `y' <= 6 capture noisily xi:xtgee `yvar' year `xvar' `covars', `options1'
+    if `y' >= 7 capture noisily xi:xtgee `yvar' year `xvar' `covars', `options2'
+  }
+}
+
+log close
+
+
+
+/////////////////////////////////////////////////////////////
+log using "/home/casey/documents/HIP/results/logfile_outlier_dropped.txt", text replace
+clear all
+use "Z:\home\casey\documents\HIP\data\lm_data_outlier_dropped.dta", clear
+
+destring , ignore("NA") replace
+
+local xvars "ebsimplementationaverage set_implementationaverage ebscriterion8080 set_criterion8080"
+local yvars "iss oss major odr recid numstud  gradrate attendrate"
+local covars "highschool maleprop aframprop asianprop latinoprop frpmprop fte100student nces_member i.urbanicity"
+
+foreach xvar of local xvars {
+  local test= substr("`xvar'", 1, 3)
+  if "`test'" == "ebs" local x = 1
+  if "`test'" == "set" local x = 2
+  foreach yvar of local yvars {
+    if "`yvar'" == "iss" local y = 1
+    if "`yvar'" == "oss" local y = 2 
+    if "`yvar'" == "major" local y = 3 
+    if "`yvar'" == "odr" local y = 4 
+    if "`yvar'" == "recid" local y = 5
+    if "`yvar'" == "numstud" local y = 6 
+    if "`yvar'" == "gradrate" local y = 7
+    if "`yvar'" == "attendrate" local y = 8
+
+    local cor "ar1"
+    if `y' <= 6 local fam "nb"
+    if `y' >= 7 local fam "gaussian"
+
+    local options1 "i(school_educationalorgid) t(year) family(`fam') corr(`cor') eform robust iterate(200)"
+    local options2 "i(school_educationalorgid) t(year) family(`fam') corr(`cor') robust iterate(200)"
+
+     if `y' <= 6 capture noisily xi:xtgee `yvar' year `xvar' `covars', `options1'
+    if `y' >= 7 capture noisily xi:xtgee `yvar' year `xvar' `covars', `options2'
+  }
+}
+
+log close
+
+
+/////////////////////////////////////////////////////////////
+log using "/home/casey/documents/HIP/results/logfile_outlier_dropped_first_3_years_only.txt", text replace
+clear all
+use "Z:\home\casey\documents\HIP\data\lm_data_outlier_dropped_first_3_years_only.dta", clear
+
+destring , ignore("NA") replace
+
+local xvars "ebsimplementationaverage set_implementationaverage ebscriterion8080 set_criterion8080"
+local yvars "iss oss major odr recid numstud  gradrate attendrate"
+local covars "highschool maleprop aframprop asianprop latinoprop frpmprop fte100student nces_member i.urbanicity"
+
+foreach xvar of local xvars {
+  local test= substr("`xvar'", 1, 3)
+  if "`test'" == "ebs" local x = 1
+  if "`test'" == "set" local x = 2
+  foreach yvar of local yvars {
+    if "`yvar'" == "iss" local y = 1
+    if "`yvar'" == "oss" local y = 2 
+    if "`yvar'" == "major" local y = 3 
+    if "`yvar'" == "odr" local y = 4 
+    if "`yvar'" == "recid" local y = 5
+    if "`yvar'" == "numstud" local y = 6 
+    if "`yvar'" == "gradrate" local y = 7
+    if "`yvar'" == "attendrate" local y = 8
+
+    local cor "ar1"
+    if `y' <= 6 local fam "nb"
+    if `y' >= 7 local fam "gaussian"
+
+    local options1 "i(school_educationalorgid) t(year) family(`fam') corr(`cor') eform robust iterate(200)"
+    local options2 "i(school_educationalorgid) t(year) family(`fam') corr(`cor') robust iterate(200)"
+
+     if `y' <= 6 capture noisily xi:xtgee `yvar' year `xvar' `covars', `options1'
+    if `y' >= 7 capture noisily xi:xtgee `yvar' year `xvar' `covars', `options2'
+  }
+}
+
+log close
+
+
+
+
+
+/////////////////////////////////////////////////////////////
+log using "/home/casey/documents/HIP/results/logfile_outlier_dropped_first_3_years_only_complete.txt", text replace
+clear all
+use "Z:\home\casey\documents\HIP\data\lm_data_outlier_dropped_first_3_years_only_complete.dta", clear
+
+destring , ignore("NA") replace
+
+local xvars "ebsimplementationaverage set_implementationaverage ebscriterion8080 set_criterion8080"
+local yvars "iss oss major odr recid numstud  gradrate attendrate"
+local covars "highschool maleprop aframprop asianprop latinoprop frpmprop fte100student nces_member i.urbanicity"
+
+foreach xvar of local xvars {
+  local test= substr("`xvar'", 1, 3)
+  if "`test'" == "ebs" local x = 1
+  if "`test'" == "set" local x = 2
+  foreach yvar of local yvars {
+    if "`yvar'" == "iss" local y = 1
+    if "`yvar'" == "oss" local y = 2 
+    if "`yvar'" == "major" local y = 3 
+    if "`yvar'" == "odr" local y = 4 
+    if "`yvar'" == "recid" local y = 5
+    if "`yvar'" == "numstud" local y = 6 
+    if "`yvar'" == "gradrate" local y = 7
+    if "`yvar'" == "attendrate" local y = 8
+
+    local cor "ar1"
+    if `y' <= 6 local fam "nb"
+    if `y' >= 7 local fam "gaussian"
+
+    local options1 "i(school_educationalorgid) t(year) family(`fam') corr(`cor') eform robust iterate(200)"
+    local options2 "i(school_educationalorgid) t(year) family(`fam') corr(`cor') robust iterate(200)"
+
+     if `y' <= 6 capture noisily xi:xtgee `yvar' year `xvar' `covars', `options1'
+    if `y' >= 7 capture noisily xi:xtgee `yvar' year `xvar' `covars', `options2'
+  }
+}
+
+log close
+
+
+
+
+//QIC///////////////////////////////////////////////////////////////////
+foreach xvar of local xvars {
+  local test= substr("`xvar'", 1, 3)
+  if "`test'" == "ebs" local x = 1
+  if "`test'" == "set" local x = 2
+  foreach yvar of local yvars {
+    if "`yvar'" == "iss" local y = 1
+    if "`yvar'" == "oss" local y = 2 
+    if "`yvar'" == "major" local y = 3 
+    if "`yvar'" == "odr" local y = 4 
+    if "`yvar'" == "recid" local y = 5
+    if "`yvar'" == "numstud" local y = 6 
+    if "`yvar'" == "gradrate" local y = 7
+    if "`yvar'" == "attendrate" local y = 8
+
+    if `y' <= 6 local fam "nb"
+    if `y' >= 7 local fam "gaussian"
+
+    foreach cor of local cors {
+      local options1 "i(school_educationalorgid) family(`fam') corr(`cor') eform robust nodisplay iterate(200)"
+      local options2 "i(school_educationalorgid) family(`fam') corr(`cor') robust nodisplay iterate(200)"
+      display  "`yvar' `xvar'"
+      
+       if `y' <= 6 capture noisily xi:qic `yvar' year `xvar' `covars', `options1'
+      if `y' >= 7 capture noisily xi:qic `yvar' year `xvar' `covars', `options2'
+    }
+  }
+}
+
+ // example
+xi:xtgee iss year set_implementationaverage highschool maleprop aframprop asianprop latinoprop frpmprop fte100student nces_member i.urbanicity, i(school_educationalorgid) t(year) fam(nb) corr(ar1) robust eform 
+
+
+
+//Regression Models (using QIC selection method for corrstruc)
+foreach xvar of local xvars {
+  local test= substr("`xvar'", 1, 3)
+  if "`test'" == "ebs" local x = 1
+  if "`test'" == "set" local x = 2
+  foreach yvar of local yvars {
+    if "`yvar'" == "iss" local y = 1
+    if "`yvar'" == "oss" local y = 2 
+    if "`yvar'" == "major" local y = 3 
+    if "`yvar'" == "odr" local y = 4 
+    if "`yvar'" == "recid" local y = 5
+    if "`yvar'" == "numstud" local y = 6 
+    if "`yvar'" == "gradrate" local y = 7
+    if "`yvar'" == "attendrate" local y = 8
+
+    if (`x' == 1 & (`y' == 1 | `y' == 2  | `y' == 8)) | (`x' == 2 & `y' == 5) local cor "exc"
+    if (`x' == 1 & `y' == 7) | (`x' == 2 & (`y' == 2 | `y' >= 6)) local cor "ar 1"
+    if (`x' == 1 & `y' == 3) | (`x' == 2 & (`y' == 1 | `y' == 3)) local cor "stat 2"
+    if (`x' == 1 & `y' == 5) local cor "nonstat 2" 
+    if (`x' == 2 & `y' == 4) local cor "nonstat 1" 
+    if (`x' == 1 & (`y' == 4 | `y' == 6)) local cor "unstructured"
+
+    if `y' <= 6 local fam  "nb"
+    if `y' >= 7 local fam  "gaussian"
+
+    local options1 "i(school_educationalorgid) y(year) family(`fam') corr(`cor') eform robust iterate(200)"
+    local options2 "i(school_educationalorgid) y(year) family(`fam') corr(`cor')  robust iterate(200)"
+
+    if `y' <= 6 capture noisily xi:xtgee `yvar' year `xvar' `covars', `options1'
+    if `y' >= 7 capture noisily xi:xtgee `yvar' year `xvar' `covars', `options2'
+  }
+}
+
+log close
+
+
+// Dropped HS
+log using "/home/casey/documents/HIP/results/logfile_outlier_hs_dropped.txt", text replace
+clear
+use "Z:\home\casey\documents\HIP\data\lm_data_outlier_hs_dropped.dta", clear
+
+destring , ignore("NA") replace
+
+local xvars "ebsimplementationaverage set_implementationaverage ebscriterion8080 set_criterion8080"
+local yvars "iss oss major odr recid numstud gradrate attendrate"
+local covars "maleprop aframprop asianprop latinoprop frpmprop fte100student nces_member i.urbanicity"
+
+foreach xvar of local xvars {
+  local test= substr("`xvar'", 1, 3)
+  if "`test'" == "ebs" local x = 1
+  if "`test'" == "set" local x = 2
+  foreach yvar of local yvars {
+    if "`yvar'" == "iss" local y = 1
+    if "`yvar'" == "oss" local y = 2 
+    if "`yvar'" == "major" local y = 3 
+    if "`yvar'" == "odr" local y = 4 
+    if "`yvar'" == "recid" local y = 5
+    if "`yvar'" == "numstud" local y = 6 
+    if "`yvar'" == "gradrate" local y = 7
+    if "`yvar'" == "attendrate" local y = 8
+
+    local cor "ar1"
+    if `y' <= 6 local fam  "nb"
+    if `y' >= 7 local fam  "gaussian"
+
+    local options1 "i(school_educationalorgid) t(year) family(`fam') corr(`cor') eform robust iterate(200)"
+    local options2 "i(school_educationalorgid) t(year) family(`fam') corr(`cor') robust iterate(200)"
+
+    if `y' <= 6 capture noisily xi:xtgee `yvar' year `xvar' `covars', `options1'
+    if `y' >= 7 capture noisily xi:xtgee `yvar' year `xvar' `covars', `options2'
+  }
+}
+
+log close
+
+
+
+
+// Dropped MS
+log using "/home/casey/documents/HIP/results/logfile_outlier_ms_dropped.txt", text replace
+clear
+use "Z:\home\casey\documents\HIP\data\lm_data_outlier_ms_dropped.dta", clear
+
+destring , ignore("NA") replace
+
+local xvars "ebsimplementationaverage set_implementationaverage ebscriterion8080 set_criterion8080"
+local yvars "iss oss major odr recid numstud gradrate attendrate"
+local covars "maleprop aframprop asianprop latinoprop frpmprop fte100student nces_member i.urbanicity"
+
+foreach xvar of local xvars {
+  local test= substr("`xvar'", 1, 3)
+  if "`test'" == "ebs" local x = 1
+  if "`test'" == "set" local x = 2
+  foreach yvar of local yvars {
+    if "`yvar'" == "iss" local y = 1
+    if "`yvar'" == "oss" local y = 2 
+    if "`yvar'" == "major" local y = 3 
+    if "`yvar'" == "odr" local y = 4 
+    if "`yvar'" == "recid" local y = 5
+    if "`yvar'" == "numstud" local y = 6 
+    if "`yvar'" == "gradrate" local y = 7
+    if "`yvar'" == "attendrate" local y = 8
+
+    local cor "ar1"
+    if `y' <= 6 local fam  "nb"
+    if `y' >= 7 local fam  "gaussian"
+
+    local options1 "i(school_educationalorgid) t(year) family(`fam') corr(`cor') eform robust iterate(200)"
+    local options2 "i(school_educationalorgid) t(year) family(`fam') corr(`cor') robust iterate(200)"
+
+    if `y' <= 6 capture noisily xi:xtgee `yvar' year `xvar' `covars', `options1'
+    if `y' >= 7 capture noisily xi:xtgee `yvar' year `xvar' `covars', `options2'
+  }
+}
+
+log close
+
+
+
+
+
+
+
+
+//RANDOM EFFECTS OUTLIER DROPPED///////////////////////////////////////////////////////////
+log using "/home/casey/documents/HIP/results/logfile_outlier_dropped_re.txt", text replace
+clear all
+use "Z:\home\casey\documents\HIP\data\lm_data_outlier_dropped.dta", clear
+
+destring , ignore("NA") replace
+
+local xvars "ebsimplementationaverage set_implementationaverage ebscriterion8080 set_criterion8080"
+local yvars "iss oss major odr recid numstud  gradrate attendrate"
+local covars "highschool maleprop aframprop asianprop latinoprop frpmprop fte100student nces_member i.urbanicity"
+
+foreach xvar of local xvars {
+  local test= substr("`xvar'", 1, 3)
+  if "`test'" == "ebs" local x = 1
+  if "`test'" == "set" local x = 2
+  foreach yvar of local yvars {
+    if "`yvar'" == "iss" local y = 1
+    if "`yvar'" == "oss" local y = 2 
+    if "`yvar'" == "major" local y = 3 
+    if "`yvar'" == "odr" local y = 4 
+    if "`yvar'" == "recid" local y = 5
+    if "`yvar'" == "numstud" local y = 6 
+    if "`yvar'" == "gradrate" local y = 7
+    if "`yvar'" == "attendrate" local y = 8
+
+    local options1 "re i(school_educationalorgid) vce(oim) irr"
+    local options2 "re i(school_educationalorgid) vce(robust)"
+
+    if `y' <= 6 capture noisily xi:xtnbreg `yvar' year `xvar' `covars', `options1'
+    if `y' >= 7 capture noisily xi:xtreg `yvar' year `xvar' `covars', `options2'
+  }
+}
+
+log close
+
+

@@ -1,0 +1,354 @@
+pbis.fidelity.measures <- c("ebs.implementationaverage",#
+                            "set_implementationaverage",#
+                            "ebs.criterion8080",#
+                            "set_criterion8080")
+corrs <- lm.data[, c(model.1.covars, model.2.covars, disc.var.names, #
+                     pbis.fidelity.measures)]
+disc.var.names
+corrs <- lm.data[, c(vars, disc.var.names, #
+                     pbis.fidelity.measures)]
+x <- cor(corrs, use="complete.obs")
+corrs$urbanicity <- as.numeric(corrs$urbanicity)#
+x <- cor(corrs, use="complete.obs")
+corrs <- transform(corrs,#
+                   urbanicity <- as.numeric(urbanicity),#
+                   high.school <- NULL)
+x <- cor(corrs, use="complete.obs")
+x
+corrs$high.school <- NULL
+names(corrs)
+x <- cor(corrs, use="complete.obs")
+corrplot(x, method="circle", order="PCA")
+corrplot(x, method="circle", order="hclust", addrect=2)
+corrplot(x, method="circle", type="upper", order="hclust", addrect=2)
+corrplot(x, method="circle", type="lower", order="hclust", addrect=2)
+corrplot(x, method="circle", type="full", order="hclust", addrect=2)
+corrplot(x, method="circle", type="full", order="PCA")
+corrplot(x, method="circle", order="PCA", title="x")
+corrplot(x, method="circle", order="PCA", title="Correlation matrix")
+corrplot(x, method="circle", order="hclust", title="Correlation matrix")
+?corrplot
+corrplot(x, method="shade", order="hclust", title="Correlation matrix")
+corrplot(x, method="square", order="hclust", title="Correlation matrix")
+?corrplot
+corrplot(x, method="color", order="hclust", title="Correlation matrix")
+corrplot(x, method="number", order="hclust", title="Correlation matrix")
+corrplot(x, method="pie", order="hclust", title="Correlation matrix")
+boxplot(lm.data$iss)
+ls()
+boxplot(lm.data$iss)
+boxplot(lm.data$odr)
+boxplot(lm.data$recid)
+boxplot(lm.data$num.stud)
+boxplot(lm.data$attend.rate)
+lm.data$school_ncesschoolid[lm.data$attend.rate<85]
+format(lm.data$school_ncesschoolid[lm.data$attend.rate<85], sci=FALSE)
+format(lm.data$school_ncesschoolid[lm.data$odr>8000], sci=FALSE)
+boxplot(lm.data$iss)
+format(lm.data$school_ncesschoolid[lm.data$iss>2000], sci=FALSE)
+boxplot(lm.data$iss)
+boxplot(lm.data$oss)
+format(lm.data$school_ncesschoolid[lm.data$oss>1000], sci=FALSE)
+format(lm.data$school_educationalorgid[lm.data$oss>1000], sci=FALSE)
+lm.data$school_ncesschoolid[lm.data$oss>1000]
+lm.data$school_educationalorgid[lm.data$oss>1000]
+str(lm.data)
+lm.data$school_ncesschoolid[lm.data$oss>1000]
+lm.data$oss[lm.data$oss>1000]
+format(lm.data$school_ncesschoolid[lm.data$oss>1000], sci=FALSE)
+boxplot(expul)
+boxplot(lm.data$expul)
+format(lm.data$school_ncesschoolid[lm.data$expul>50], sci=FALSE)
+paste(" ~ year +", model.1.covars, sep=" + ")
+paste(" ~ year", model.1.covars, sep=" + ")
+paste("asdf", paste(" ~ year", model.1.covars, sep=" + "))
+model.2.covars
+model.1.covars <- c("high.school", "male.prop", "afram.prop", "asian.prop",#
+                        "latino.prop", "frpm.prop")#
+model.2.covars <- c("nces_member", "fte.100.student", "urbanicity")
+paste(model.1.covars, model.2.covars, sep=" + ")
+paste(model.1.covars, model.2.covars, collapse=" + ")
+paste(model.1.covars, model.2.covars, sep=" + ", collapse=" + ")
+boxplot(lm.data$oss)
+boxplot(lm.data$iss)
+lm.data$school_ncesschoolid[lm.data$iss>2000]
+boxplot(lm.data$iss)
+format(lm.data$school_ncesschoolid[lm.data$iss>2000], sci=FALSE)
+lm.data.x <- lm.data[-which(lm.data$ncesschoolid=="173441003540"), ]
+boxplot(lm.data$iss)
+boxplot(lm.data.x$iss)
+lm.data.x <- lm.data[-which(lm.data$school_ncesschoolid=="173441003540"), ]
+boxplot(lm.data.x$iss)
+boxplot(lm.data.x$odr)
+boxplot(lm.data.x$attend.rate)
+boxplot(lm.data.x$grad.rate)
+boxplot(lm.data.x$oss)
+boxplot(lm.data.x$expul)
+boxplot(lm.data.x$major)
+boxplot(lm.data.x$odr)
+hist(lm.data.x$odr)
+hist(lm.data.x$major)
+hist(lm.data$major)
+hist(lm.data$iss)
+hist(lm.data.x$iss)
+format(lm.data$school_ncesschoolid[lm.data$odr>8000], sci=FALSE)
+lm.data.x <- lm.data[which(lm.data$school_ncesschoolid != "173441003540"), ]
+nrow(lm.data)
+nrow(lm.data.x)
+names(d)
+afram.odrs <- subset(d, student_ethnicitylabel == "Black")
+afram <- ddply(afram.odrs, c("school_educationalorgid", "school_schoolyear"),#
+            function(df)#
+              c(afram.odr = length(df$student_ethnicitylabel)))
+library(plyr)
+latino.odrs <- subset(d, student_ethnicitylabel == "Hispanic/Latino")#
+latino <- ddply(latino.odrs, c("school_educationalorgid", "school_schoolyear"),#
+            function(df)#
+              c(latino.odr = length(df$student_ethnicitylabel)))
+afram <- ddply(afram.odrs, c("school_educationalorgid", "school_schoolyear"),#
+            function(df)#
+              c(afram.odr = length(df$student_ethnicitylabel)))
+races.odr <- merge(odr, afram, all=TRUE)#
+races.odr <- merge(races.odr, latino, all=TRUE)#
+#
+races.odr <- transform(races.odr,#
+                       afram.odr.perc = afram.odr / odr * 100,#
+                       latino.odr.perc = latino.odr / odr * 100)
+races.odr
+with(races.odr, boxplot(afram.odr.perc~school_schoolyear)
+)
+with(races.odr, boxplot(latino.odr.perc ~ school_schoolyear))
+corrplot(x, method="circle", order="hclust", title="Correlation matrix")
+names(races.odr)
+corrplot(x, method="circle", order="hclust", title="Correlation matrix", addrect=6)
+install.packages()
+library(yags)
+Model2 <- function(y, x, z="exchangeable") {#
+  #  Args: y#
+  text <- paste(y, paste("~ year", x, model.1.covars, model.2.covars,#
+                         sep=" + ", collapse=" + "))#
+  formula <- as.formula(text)#
+  model <- RunModel(formula, z)#
+  print(model)#
+  print(CreatePValues(model))#
+}
+with(lm.data, Model2(iss, ebs.implementationaverage))
+CreatePValues <- function(x) {#
+  # Args:#
+  #   x: Regression Model Object#
+  return(cbind(2 * pnorm(abs(coef(summary(x))[,5]), lower.tail = FALSE)))#
+}#
+#
+#
+model.1.covars <- c("high.school", "male.prop", "afram.prop", "asian.prop",#
+                        "latino.prop", "frpm.prop")#
+model.2.covars <- c("nces_member", "fte.100.student", "urbanicity")
+with(lm.data, Model2(iss, ebs.implementationaverage))
+RunModel <- function(formula, z) {#
+  #  Args:#
+  gee(formula,#
+      id      = school_educationalorgid,#
+      data    = lm.data,#
+      family  = poisson,#
+      corstr  = z,#
+      maxiter = 100)#
+}
+with(lm.data, Model2(iss, ebs.implementationaverage))
+with(lm.data, Model2("iss", "ebs.implementationaverage"))
+text <- paste("iss", paste("~ year", "ebs.implementationaverage", model.1.covars, sep=" + "))
+text
+text <- paste("iss", paste("~ year", "ebs.implementationaverage", model.1.covars, collapse=" + "))
+text
+text <- paste("iss", paste("~ year", "ebs.implementationaverage", model.1.covars, collapse=" + ", sep=" + "))
+text
+paste(model.1.vars, sep=" + "
+)
+paste(model.1.covars, sep=" + ")
+paste(model.1.covars, collapse=" + ")
+covars <- paste(model.1.covars, collapse=" + ")
+paste("iss", "~ year", "ebs.implementationaverage", covars, sep=" + ")
+paste("iss", "~ year")
+depvar <- paste("iss", "~ year")
+paste(depvar, "ebs.implementationaverage", covars, sep=" + ")
+as.formula(paste(depvar, "ebs.implementationaverage", covars, sep=" + "))
+Model1 <- function(y, x, z="exchangeable") {#
+  #  Args:#
+  covars <- paste(model.1.covars, collapse=" + ")#
+  depvar <- paste(y, "~ year")#
+  text <- paste(depvar, x, covars, sep=" + ")#
+  formula <- as.formula(text)#
+  model <- RunModel(formula, z)#
+  print(summary(model))#
+  print(CreatePValues(model))#
+}
+with(lm.data, Model1("iss", "ebs.implementationaverage"))
+paste(model.1.covars, model.2.covars, sep="+")
+paste(model.1.covars, model.2.covars, sep="+", collapse=" + ")
+paste(model.1.covars, sep="+", collapse=" + ")
+paste(model.1.covars, collapse=" + ")
+  covars1 <- paste(model.1.covars, collapse=" + ")
+  covars2 <- paste(model.2.covars, collapse=" + ")
+paste(covars1, covars2, sep=" + ")
+Model2 <- function(y, x, z="exchangeable") {#
+  #  Args: y#
+  covars1 <- paste(model.1.covars, collapse=" + ")#
+  covars2 <- paste(model.2.covars, collapse=" + ")#
+  covars  <- paste(covars1, covars2, sep=" + ")#
+  depvar <- paste(y, "~year")#
+  text <- paste(depvar, x, covars, sep=" + ")#
+  formula <- as.formula(text)#
+  model <- RunModel(formula, z)#
+  print(summary(model))#
+  print(CreatePValues(model))#
+}
+with(lm.data, Model2("iss", "ebs.criterion8080"))
+library(MASS)
+as.formula(paste(depvar, "ebs.implementationaverage", covars, sep=" + "))
+x <- as.formula(paste(depvar, "ebs.implementationaverage", covars, sep=" + "))
+ gee(x,#
+      id      = school_educationalorgid,#
+      data    = lm.data,#
+      family  = negative.binomial,#
+      corstr  = exchangeable,#
+      maxiter = 100)
+ gee(x,#
+      id      = school_educationalorgid,#
+      data    = lm.data,#
+      family  = negative.binomial(theta=1),#
+      corstr  = exchangeable,#
+      maxiter = 100)
+ gee(x,#
+      id      = school_educationalorgid,#
+      data    = lm.data,#
+      family  = negative.binomial(1),#
+      corstr  = exchangeable,#
+      maxiter = 100)
+ glm(x,#
+      id      = school_educationalorgid,#
+      data    = lm.data,#
+      family  = negative.binomial(1),#
+      corstr  = exchangeable,#
+      maxiter = 100)
+ glm(x,#
+      data    = lm.data,#
+      family  = negative.binomial(1),#
+      corstr  = exchangeable,#
+      maxiter = 100)
+ glm(x,#
+      data    = lm.data,#
+      family  = negative.binomial(1),#
+      maxiter = 100)
+ glm(x,#
+      data    = lm.data,#
+      family  = negative.binomial(1),)
+ glm(x,#
+      data    = lm.data,#
+      family  = negative.binomial(1))
+gee
+install.packages()
+library(sos)
+corrplot(x, method="circle", order="PCA", title="Correlation matrix")
+x
+x <- cor(corrs, use="complete.obs")
+corrplot(x, method="circle", order="PCA", title="Correlation matrix")
+cor(lm.data.x$grad.rate, lm.data.x$iss, use="complete.obs")
+cor(lm.data$grad.rate, lm.data$iss, use="complete.obs")
+corrs
+cor(corrs$grad.rate, corrs$iss, use="complete.obs")
+corrplot(x, method="circle", order="original", title="Correlation matrix")
+x
+cor(corrs, use="everything")
+?cor
+cor(corrs, use="pairwise.complete.obs")
+x <- cor(corrs, use="pairwise.complete.obs")
+corrplot(x, method="circle", order="PCA", title="Correlation matrix")
+corrplot(x, method="circle", order="hclust", title="Correlation matrix")
+corrplot(x, method="circle", order="hclust", title="Correlation matrix", addrect=4)
+corrplot(x, method="circle", order="hclust", title="Correlation matrix", addrect=6)
+corrplot(x, method="circle", order="hclust", title="Correlation matrix", addrect=8)
+corrplot(x, method="circle", order="hclust", title="Correlation matrix", addrect=7)
+corrplot(x, method="circle", order="hclust", title="Correlation matrix", addrect=6)
+corrplot(x, method="circle", order="PCA", title="Correlation matrix")
+corrplot(x, method="circle", order="hclust", title="Correlation matrix", addrect=6)
+corrplot(x, method="square", order="hclust", title="Correlation matrix", addrect=6)
+?corrplot
+corrplot(x, method="color", order="hclust", title="Correlation matrix", addrect=6)
+corrplot(x, method="ellipse", order="hclust", title="Correlation matrix", addrect=6)
+corrplot(x, method="shade", order="hclust", title="Correlation matrix", addrect=6)
+corrplot(x, method="color", order="hclust", title="Correlation matrix", addrect=6)
+corrplot(x, method="circle", order="hclust", title="Correlation matrix", addrect=6)
+hist(lm.data.x$iss)
+hist(lm.data.x$oss)
+hist(lm.data.x$expul)
+hist(lm.data.x$major)
+hist(lm.data.x$odr)
+hist(lm.data.x$grad.rate)
+hist(lm.data$grad.rate)
+shapiro.test(lm.data.x$grad.rate)
+shapiro.test(lm.data.x$attend.rate)
+hist(lm.data.x$attend.rate)
+hist(sqrt(lm.data.x$attend.rate))
+hist(1/(lm.data.x$attend.rate))
+shapiro.test(log(1/(lm.data.x$attend.rate)))
+hist(log(1/(lm.data.x$attend.rate)))
+hist(1/(lm.data.x$attend.rate)
+)
+corrplot(x, method="color", order="hclust", title="Correlation matrix", addrect=6)
+hist(lm.data.x$male.prop)
+boxplot(lm.data.x$male.prop)
+plot(lm.data.x$male.prop, lm.data.x$iss)
+plot(lm.data.x$male.prop, lm.data.x$oss)
+plot(lm.data.x$male.prop, lm.data.x$odr)
+lm.data$school_educationalorgid[which(lm.data$odr>8000)]
+hist(lm.data$odr)
+schools
+names(schools)
+fix(school)
+fix(schools)
+table(lm.data$school_educationalorgid)
+fix(schools)
+fix(schools)
+names(a)
+fix(schools)
+names(schools)
+alts <- schools$School_EducationalOrgId[which(schools$Filter_School_IsAltJJ_max==1)]
+alts
+lm.data$school_educationalorgid %in% alts
+lm.data$odr[, school_educationalorgid==925]
+lm.data$odr[, lm.data$school_educationalorgid==925]
+lm.data$odr[lm.data$school_educationalorgid==925]
+lm.data$odr[lm.data$school_educationalorgid=="925"]
+lm.data$odr[lm.data$school_educationalorgid=="925"]
+lm.data$odr[lm.data$school_educationalorgid]
+fix(lm.data)
+lm.data$school_educationalorgid
+lm.data$school_educationalorgid %in% alts
+which(schools$Filter_School_IsAltJJ_max==1)
+schools$School_EducationalOrgId[alt.criteria]
+alt.criteria <- which(schools$Filter_School_IsAltJJ_max==1)
+schools$School_EducationalOrgId[alt.criteria]
+lm.data$school_educationalorgid %out% alts
+lm.data$school_educationalorgid !%in% alts
+!lm.data$school_educationalorgid %in% alts
+RemoveAltSchools <- function(x) {#
+  # Args:#
+  #   x: Data frame#
+  alt.criteria <- which(schools$Filter_School_IsAltJJ_max==1)#
+  alts <- schools$School_EducationalOrgId[alt.criteria] #
+  return(!x$school_educationalorgid %in% alts)#
+}
+lm.data.alts <- RemoveAltSchools(lm.data)
+length(unique(lm.data$school_educationalorgid))
+length(unique(lm.data.alts$school_educationalorgid))
+lm.data.alts
+alts
+alt.criteria <- which(schools$Filter_School_IsAltJJ_max==1)
+alt.criteria
+alts <- schools$School_EducationalOrgId[alt.criteria]
+alts
+!lm.data$school_educationalorgid %in% alts
+lm.data[(!lm.data$school_educationalorgid %in% alts), ])
+lm.data[(!lm.data$school_educationalorgid %in% alts), ]
+lm.data.alts <- lm.data[(!lm.data$school_educationalorgid %in% alts), ]
+length(unique(lm.data$school_educationalorgid))
+length(unique(lm.data.alts$school_educationalorgid))

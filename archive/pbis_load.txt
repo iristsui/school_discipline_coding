@@ -1,0 +1,28 @@
+sink(file="//Users//HumanImpactPartners//Documents//hias//school_discipline_hia//results//pbis_output.txt") #send output to file
+
+# PBIS Loading File
+# By Casey Tsui
+# Format: R
+# Last updated: 9/16/10
+
+# Author Comment: This file loads in PBIS school discipline data from .csv files
+# NOTE: THIS FILE IS NOW OBSOLETE DUE TO THE RECEIPT OF NEW DATA FILES FROM UO
+#       ON 9/16/10. PLEASE SEE THE NEW FILE IN:
+#       "~//Documents//hias//school_discipline_hia//data//pbis_data//Gottlieb Revised Data Files 9-16-2010"
+
+# READ IN FILES ################################################################
+a <- read.csv(file="~//Documents//hias//school_discipline_hia//data//pbis_data//Gottlieb Final Packet//Gottlieb Final Packet//011_08172010a.csv", header=TRUE, sep=",")
+                    # a=school-level demographics by school year
+
+b <- read.csv(file="~//Documents//hias//school_discipline_hia//data//pbis_data//Gottlieb Final Packet//Gottlieb Final Packet//011_8172010b.csv", header=TRUE, sep=",")
+                    # b=survey-level ebs responses by school by school year
+
+c <- read.csv(file="~//Documents//hias//school_discipline_hia//data//pbis_data//Gottlieb Final Packet//Gottlieb Final Packet//011_08172010c.csv", header=TRUE, sep=",")
+                    # c=incident-level odr by student by school year
+
+c <- c[which(c$Student_GradeId >= 6), ] # keep only 6th through 12th grade odr
+
+d <- read.csv(file="~//Documents//hias//school_discipline_hia//data//pbis_data//011_08172010d//011_08172010d.csv", header=TRUE, sep=",")
+                    # d=NCES IDs and misc school-level demographics by sc. year
+
+sink()
